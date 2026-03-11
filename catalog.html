@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <!-- Оптимизация для мобильных устройств -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Мобильный каталог | 2 товара в ряд</title>
+    <style>
+        /* СБРОС И БАЗОВЫЕ НАСТРОЙКИ */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.4;
+            color: #1e293b;
+        }
+
+        /* ЦЕНТРОВЩИК С МЯГКИМИ ПОЛЯМИ */
+        .container {
+            max-width: 480px;  /* типичная ширина мобильного, но сетка подстроится */
+            width: 100%;
+            margin: 0 auto;
+            padding: 12px 12px 20px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin: 8px 0 18px 4px;
+            color: #0f172a;
+            border-left: 5px solid #3b82f6;
+            padding-left: 14px;
+        }
+
+        /* ГРИД — не более двух карточек в ряд */
+        .catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* всегда 2 колонки */
+            gap: 14px;
+            align-items: stretch;
+        }
+
+        /* КАРТОЧКА ТОВАРА */
+        .product-card {
+            background: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 18px rgba(0, 0, 0, 0.03), 0 2px 6px rgba(0, 20, 50, 0.05);
+            transition: transform 0.15s ease, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(211, 226, 255, 0.3);
+            backdrop-filter: blur(2px);
+        }
+
+        .product-card:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(0, 85, 255, 0.1);
+        }
+
+        /* КОНТЕЙНЕР ИЗОБРАЖЕНИЯ — фиксированная пропорция, фон placeholder */
+        .image-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1; /* квадратная картинка, отлично на мобильных */
+            background: linear-gradient(145deg, #eef2f7, #e0e7f0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        /* Стилизованные плейсхолдеры под картинки (чтобы не было пустых разрывов) */
+        .product-icon {
+            width: 70%;
+            height: 70%;
+            opacity: 0.7;
+            background: radial-gradient(circle at 30% 30%, #b3c7e5, #7b9fd0);
+            border-radius: 32% 68% 38% 62% / 58% 42% 58% 42%;
+            box-shadow: inset -4px -4px 8px rgba(0,0,0,0.1), inset 4px 4px 10px #ffffff80;
+            transition: 0.2s;
+        }
+
+        /* делаем разные оттенки для визуального разнообразия товаров */
+        .product-card:nth-child(odd) .product-icon {
+            background: radial-gradient(circle at 70% 30%, #fbc9b3, #e2946b);
+            border-radius: 46% 54% 37% 63% / 55% 42% 58% 45%;
+        }
+        .product-card:nth-child(3) .product-icon,
+        .product-card:nth-child(8) .product-icon {
+            background: radial-gradient(circle at 40% 60%, #b1d0b1, #5b8c72);
+            border-radius: 61% 39% 44% 56% / 44% 61% 39% 56%;
+        }
+        .product-card:nth-child(5) .product-icon,
+        .product-card:nth-child(9) .product-icon {
+            background: radial-gradient(circle at 65% 55%, #f3e7a2, #c9a53b);
+            border-radius: 33% 67% 52% 48% / 58% 43% 57% 42%;
+        }
+        .product-card:nth-child(6) .product-icon,
+        .product-card:nth-child(10) .product-icon {
+            background: radial-gradient(circle at 25% 70%, #dbb9d9, #a36d90);
+            border-radius: 57% 43% 31% 69% / 47% 52% 48% 53%;
+        }
+
+        /* Информация о товаре */
+        .product-info {
+            padding: 12px 10px 14px;
+            text-align: left;
+            border-top: 1px solid rgba(0,0,0,0.02);
+            background-color: white;
+        }
+
+        .product-title {
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 6px;
+            color: #17212d;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* маленькая псевдо-цена для реализма */
+        .price-tag {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #2563eb;
+            background: #e9effc;
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 30px;
+            letter-spacing: -0.01em;
+        }
+
+        /* футер или примечание */
+        .footer-note {
+            margin-top: 24px;
+            font-size: 0.8rem;
+            color: #5f6c84;
+            text-align: center;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 20px;
+        }
+
+        /* Адаптация для совсем мелких экранов (например, сгибаемые, но оставим 2 в ряд) */
+        @media (max-width: 360px) {
+            .container {
+                padding: 8px 8px 16px;
+            }
+            .catalog-grid {
+                gap: 10px;
+            }
+            .product-title {
+                font-size: 0.9rem;
+            }
+            .price-tag {
+                font-size: 0.75rem;
+                padding: 3px 8px;
+            }
+        }
+
+        /* Для очень больших экранов ограничиваем ширину контейнера, но grid остаётся 2 колонки */
+        @media (min-width: 600px) {
+            .container {
+                max-width: 550px;
+            }
+        }
+
+        /* симулируем "картинки" через иконки, но можно было бы вставить и img */
+        /* однако по заданию нужны именно картинки — заменяем на div с декоративным фоном,
+           но для полной реалистичности мы можем добавить эмодзи или просто числа,
+           но так как требовались картинки, а изображения не предоставлены — используем стилизованные блоки с узором,
+           но чтобы они визуально выглядели как картинки, добавим текст "Товар X" внутри, как overlay?
+           Лучше поместим номер товара на "картинку" мелко, чтобы ассоциировать */
+        .image-wrapper .product-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 200;
+            color: #ffffffb0;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+            background-blend-mode: overlay;
+        }
+
+        /* проставим каждой карточке свой эмодзи/число через content в псевдо? нет, через HTML данные */
+        /* добавим спаны вручную при генерации, но проще пронумеровать через data-attr и css? */
+        /* но мы просто руками в html поставим цифры/иконки в .product-icon */
+        /* сделаем это прямо в разметке:  */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Каталог • 10 товаров</h1>
+
+        <!-- Сетка ровно 10 карточек, 2 в ряд -->
+        <div class="catalog-grid">
+            <!-- товар 1 -->
+            <div class="product-card">
+                <div class="image-wrapper">
+                    <div class="product-icon">📦</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-title">Товар 1 · Премиум</div>
+                    <span class="price-tag">2 490 ₽</span>
+                </div>
+            </div>
+            <!-- товар 2 -->
+            <div class="product-card">
+                <div class="image-wrapper">
+                    <div class="product-icon">🧴</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-title">Товар 2 · Уход</div>
+                    <span class="price-tag">890 ₽</span>
+                </div>
+            </div>
+            <!-- товар 3 -->
+            <div class="product-card">
+                <div class="image-wrapper">
+                    <div class="product-icon">👟</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-title">Товар 3 · Кроссовки</div>
+                    <span class="price-tag">4 990 ₽</span>
+                </div>
+            </div>
+            <!-- товар 4 -->
+            <div class="product-card">
+                <div class="image-wrapper">
+                    <div class="product-icon">⌚</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-title">Товар 4 · Часы</div>
+                    <span class="price-tag">3 290 ₽</span>
+                </div>
+            </div>
+            <!-- товар 5 -->
+            <div class="product-card">
+                <div class="image-wrapper">
+                    <div class="product-icon">💼</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-title">Товар 5 · Сумка</div>
+                    <span class="price-tag">2 990 ₽</span>
+                </div>
+            </div>
+            <!-- товар 6 -->
+            <div class="product-card">
+                <div class="image-wrapper">
+                    <div class="product-icon">🔊</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-title">Товар 6 · Колонка</div>
+                    <span class="price-tag">1 790 ₽</span>
+                </div>
+            </div>
+            <!-- товар 7 -->
+            <div class="product-card">
+                <div class="image-wrapper">
+                    <div class="product-icon">☕</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-title">Товар 7 · Термокружка</div>
+                    <span class="price-tag">1 190 ₽</span>
+                </div>
+            </div>
+            <!-- товар 8 -->
+            <div class="product-card">
+                <div class="image-wrapper">
+                    <div class="product-icon">📚</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-title">Товар 8 · Книга</div>
+                    <span class="price-tag">650 ₽</span>
+                </div>
+            </div>
+            <!-- товар 9 -->
+            <div class="product-card">
+                <div class="image-wrapper">
+                    <div class="product-icon">🎧</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-title">Товар 9 · Наушники</div>
+                    <span class="price-tag">2 990 ₽</span>
+                </div>
+            </div>
+            <!-- товар 10 -->
+            <div class="product-card">
+                <div class="image-wrapper">
+                    <div class="product-icon">🔋</div>
+                </div>
+                <div class="product-info">
+                    <div class="product-title">Товар 10 · Пауэрбанк</div>
+                    <span class="price-tag">1 590 ₽</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Небольшая подсказка про оптимизацию -->
+        <div class="footer-note">
+            ✦ Сетка 2 товара в ряд ✦ <br> Адаптировано под сенсорное управление
+        </div>
+    </div>
+
+    <!--
+        ОПТИМИЗАЦИЯ ПОД МОБИЛЬНЫЕ:
+        - viewport width=device-width
+        - максимальная ширина контейнера ограничена, чтобы на планшетах тоже смотрелось
+        - карточки имеют активное состояние :active для тактильной обратной связи
+        - aspect-ratio изображений предотвращает смещение макета при загрузке
+        - шрифты системные — быстро рендерятся
+        - сетка grid: 2 колонки с резиновыми промежутками
+        - все картинки представлены юникод-иконками, но визуально это яркие цветные блоки (product-icon)
+          и соответствуют названиям "товар1 ... товар10" с дополнительным словом (просто для красоты)
+    -->
+</body>
+</html>
